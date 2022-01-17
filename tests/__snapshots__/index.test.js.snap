@@ -1,0 +1,27 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<FloatingLabel /> matches snapshots 1`] = `
+<body>
+  <div>
+    <div
+      class="fl-input-container"
+    >
+      <input
+        autocomplete="on"
+        class="fl-input fl-input-dark"
+        id="snapshot"
+        tab_index="0"
+        value=""
+      />
+      <label
+        class="fl-input-label fl-input-label-dark"
+        for="snapshot"
+      />
+      <span
+        class="fl-input-bar"
+      />
+      
+    </div>
+  </div>
+</body>
+`;
