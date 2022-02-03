@@ -1,5 +1,5 @@
 {
-  "name": "floating-label-input",
+  "name": "@joeyparis/react-floating-label-input",
   "version": "1.0.0",
   "description": "A material design inspired floating label input",
   "main": "index.js",
