@@ -229,6 +229,7 @@ const styles = css`
 	.fl-input-select {
 		display: none;
 		position: absolute;
+		margin: 0;
 		background-color: #fff;
 		top: 99%;
 		width: 100%;
@@ -425,7 +426,7 @@ const FloatingLabel = ({
 	// Prevent autofill if requested or if input is select type or if autocomplete options provided
 	const should_prevent_autofill = prevent_autofill || is_select || is_autocomplete
 
-	const has_value = Boolean(display_value) || always_float
+	const has_value = Boolean(display_value) || always_float || Boolean(placeholder) || input_props.type === 'date'
 	const has_message = Boolean(message)
 
 	useEffect(() => {
@@ -435,7 +436,7 @@ const FloatingLabel = ({
 	}, [JSON.stringify(options)])
 
 	useEffect(() => {
-		if (autocomplete_strings) {
+		if (autocomplete_strings && autocomplete_strings.length > 0) {
 			const new_autocomplete_options = matchAutocomplete(value)
 			if (new_autocomplete_options) {
 				updateOptions(new_autocomplete_options)
@@ -540,7 +541,6 @@ const FloatingLabel = ({
 					{...input_props}
 					id={should_prevent_autofill ? input_autofill_id : input_props.id || default_id}
 				/>
-
 				<label
 					htmlFor={should_prevent_autofill ? label_autofill_id : input_props.id || default_id}
 					className={classNames('fl-input-label', {
@@ -615,42 +615,42 @@ const FloatingLabel = ({
 }
 
 FloatingLabel.propTypes = {
-	show_bar: PropTypes.bool,
 	always_float: PropTypes.bool,
+	autocomplete_strings: PropTypes.arrayOf(PropTypes.string),
+	className: PropTypes.string,
+	containerClassNames: PropTypes.string,
+	containerStyle: PropTypes.objectOf(PropTypes.any),
 	dark: PropTypes.bool,
-	prevent_autofill: PropTypes.bool,
+	input_ref: PropTypes.any, // todo: I have no idea what this should be
 	invalid: PropTypes.bool,
+	label: PropTypes.oneOfType([PropTypes.string, PropTypes.objectOf(PropTypes.any)]),
+	listStyle: PropTypes.objectOf(PropTypes.any),
 	message: PropTypes.string,
-	transparent: PropTypes.bool,
+	onBlur: PropTypes.func,
+	onChange: PropTypes.func,
+	onFocus: PropTypes.func,
 	options: PropTypes.arrayOf(
 		PropTypes.shape({
 			text: PropTypes.any,
 			value: PropTypes.any,
 		}),
 	),
-	autocomplete_strings: PropTypes.arrayOf(PropTypes.string),
-	className: PropTypes.string,
-	containerClassNames: PropTypes.string,
-	containerStyle: PropTypes.objectOf(PropTypes.any),
-	listStyle: PropTypes.objectOf(PropTypes.any),
-	input_ref: PropTypes.any, // todo: I have no idea what this should be
-	label: PropTypes.oneOfType([PropTypes.string, PropTypes.objectOf(PropTypes.any)]),
-	onBlur: PropTypes.func,
-	onChange: PropTypes.func,
-	onFocus: PropTypes.func,
+	placeholder: PropTypes.string,
+	prevent_autofill: PropTypes.bool,
+	show_bar: PropTypes.bool,
+	transparent: PropTypes.bool,
 	value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
 	wrap_label: PropTypes.bool,
-	placeholder: PropTypes.string,
 }
 
 FloatingLabel.defaultProps = {
-	show_bar: true,
 	always_float: false,
 	dark: true,
-	transparent: false,
-	prevent_autofill: false,
 	invalid: false,
 	message: '',
+	prevent_autofill: false,
+	show_bar: true,
+	transparent: false,
 	// options: [],
 }
 
