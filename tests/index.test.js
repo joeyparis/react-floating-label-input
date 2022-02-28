@@ -2,6 +2,14 @@ import React, { useState } from 'react'
 import { render } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 
+jest.mock('use-is-in-viewport')
+import useIsInViewPort from 'use-is-in-viewport'
+let i = 0
+useIsInViewPort.mockImplementation(() => {
+	i += 1
+	return [Boolean(i % 2), jest.fn()]
+})
+
 import FloatingLabel from '../index'
 
 describe('<FloatingLabel />', () => {
@@ -22,6 +30,10 @@ describe('<FloatingLabel />', () => {
 				}
 			}
 		}
+	})
+
+	afterEach(() => {
+		jest.useRealTimers()
 	})
 
 	it('matches snapshots', () => {
@@ -70,10 +82,11 @@ describe('<FloatingLabel />', () => {
 		expect(first_name_input.value).toBe('default_name')
 	})
 
-	it('works as a select field', () => {
+	it('works as a select field', async () => {
+		jest.useFakeTimers()
 		window.scrollTo = jest.fn()
 
-		const { queryByTitle, queryByText } = render(
+		const { findByTitle, findByText } = render(
 			<FloatingLabelWrapper
 				label="Department"
 				type="select"
@@ -84,19 +97,29 @@ describe('<FloatingLabel />', () => {
 				title="floating-label-select"
 			/>,
 		)
-		const department_dropdown = queryByTitle('floating-label-select')
+		const department_dropdown = await findByTitle('floating-label-select')
 		userEvent.click(department_dropdown)
 
-		const first_option = queryByText('one')
+		const first_option = await findByText('one')
 		expect(department_dropdown.value).toBe('')
 		userEvent.click(first_option)
 
+		// await waitForElementToBeRemoved(() => queryByT('floating-label-select'))
+
 		expect(department_dropdown.value).toBe('one') // But shouldn't it be 1? It hasn't been a problem but this seems wrong
+		jest.runAllTimers()
 		expect(window.scrollTo).toHaveBeenCalled()
+
+		useIsInViewPort.mockImplementation(() => [true, jest.fn()])
+
+		const dropwdown_select = await findByTitle('Department Dropdown')
+		expect(dropwdown_select).toHaveStyle({ display: 'none' })
 	})
 
-	it('handles keyboard input for select fields', () => {
-		const { queryByTitle } = render(
+	it('handles keyboard input for select fields', async () => {
+		window.scrollTo = jest.fn()
+
+		const { findByTitle } = render(
 			<FloatingLabelWrapper
 				label="Department"
 				type="select"
@@ -107,13 +130,82 @@ describe('<FloatingLabel />', () => {
 				title="floating-label-select"
 			/>,
 		)
-		const department_dropdown = queryByTitle('floating-label-select')
+		const department_dropdown = await findByTitle('floating-label-select')
 		userEvent.click(department_dropdown)
 
 		userEvent.keyboard('{ArrowDown}') // Start at the first entry (one), so pressing it only once moves us to (two)
 		userEvent.keyboard('{Enter}')
 
 		expect(department_dropdown.value).toBe('two')
+
+		const dropwdown_select = await findByTitle('Department Dropdown')
+		expect(dropwdown_select).toHaveStyle({ display: 'none' })
+	})
+
+	it('suggests autocomplete options', async () => {
+		window.scrollTo = jest.fn()
+
+		const { findByTitle, queryByText } = render(
+			<FloatingLabelWrapper
+				autocomplete_strings={['abcd', 'defg', 'ghij', '123']}
+				title="floating-label-select"
+			/>,
+		)
+		const department_dropdown = await findByTitle('floating-label-select')
+
+		userEvent.type(department_dropdown, 'd')
+		expect(queryByText('abcd')).toBeDefined()
+		expect(queryByText('defg')).toBeDefined()
+		expect(queryByText('ghij')).toBeNull()
+		expect(queryByText('123')).toBeNull()
+
+		userEvent.type(department_dropdown, '{backspace}g')
+		expect(queryByText('abcd')).toBeNull()
+		expect(queryByText('defg')).toBeDefined()
+		expect(queryByText('ghij')).toBeDefined()
+		expect(queryByText('123')).toBeNull()
+
+		userEvent.type(department_dropdown, '{backspace}2')
+		expect(queryByText('abcd')).toBeNull()
+		expect(queryByText('defg')).toBeNull()
+		expect(queryByText('ghij')).toBeNull()
+		expect(queryByText('123')).toBeDefined()
+
+		const dropwdown_select = await findByTitle('undefined Dropdown')
+		expect(dropwdown_select).toHaveStyle({ display: 'block' }) // We want it to be block because nothing has been selected
+	})
+
+	it('handles custom onFocus callback', () => {
+		const onFocus = jest.fn()
+
+		const { queryByTitle } = render(
+			<FloatingLabelWrapper label="Department" title="floating-label-input" onFocus={onFocus} />,
+		)
+		const department_dropdown = queryByTitle('floating-label-input')
+		userEvent.click(department_dropdown)
+
+		expect(onFocus).toHaveBeenCalledWith(
+			expect.objectContaining({
+				type: 'focus',
+			}),
+		)
+	})
+
+	it('handles custom onBlur callback', async () => {
+		const onBlur = jest.fn()
+
+		const { queryByTitle } = render(
+			<FloatingLabelWrapper label="Department" title="floating-label-input" onBlur={onBlur} />,
+		)
+		const department_dropdown = queryByTitle('floating-label-input')
+		userEvent.click(department_dropdown)
+		userEvent.click(department_dropdown.parentElement)
+
+		expect(onBlur).toHaveBeenCalledWith(
+			expect.objectContaining({
+				type: 'blur',
+			}),
+		)
 	})
 
 	it.skip('handles a fake preventDefault', () => {
@@ -140,33 +232,5 @@ describe('<FloatingLabel />', () => {
 			{ preventDefault: expect.any(Function), target: { name: undefined, value: 1 } },
 			true,
 		)
-	})
-
-	it('suggests autocomplete options', () => {
-		const { queryByTitle, queryByText } = render(
-			<FloatingLabelWrapper
-				autocomplete_strings={['abcd', 'defg', 'ghij', '123']}
-				title="floating-label-select"
-			/>,
-		)
-		const department_dropdown = queryByTitle('floating-label-select')
-
-		userEvent.type(department_dropdown, 'd')
-		expect(queryByText('abcd')).toBeDefined()
-		expect(queryByText('defg')).toBeDefined()
-		expect(queryByText('ghij')).toBeNull()
-		expect(queryByText('123')).toBeNull()
-
-		userEvent.type(department_dropdown, '{backspace}g')
-		expect(queryByText('abcd')).toBeNull()
-		expect(queryByText('defg')).toBeDefined()
-		expect(queryByText('ghij')).toBeDefined()
-		expect(queryByText('123')).toBeNull()
-
-		userEvent.type(department_dropdown, '{backspace}2')
-		expect(queryByText('abcd')).toBeNull()
-		expect(queryByText('defg')).toBeNull()
-		expect(queryByText('ghij')).toBeNull()
-		expect(queryByText('123')).toBeDefined()
 	})
 })

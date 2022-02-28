@@ -4,17 +4,17 @@ exports[`<FloatingLabel /> matches snapshots 1`] = `
 <body>
   <div>
     <div
-      class="fl-input-container"
+      class="fl-input-container css-fswfu7"
     >
       <input
         autocomplete="on"
-        class="fl-input fl-input-dark"
+        class="fl-input"
         id="snapshot"
         tab_index="0"
         value=""
       />
       <label
-        class="fl-input-label fl-input-label-dark"
+        class="fl-input-label"
         for="snapshot"
       />
       <span

@@ -1,8 +1,5 @@
 module.exports = {
-	collectCoverageFrom: [
-		'index.js',
-		'options.js'
-	],
+	collectCoverageFrom: ['index.js', 'options.js'],
 	coverageThreshold: {
 		global: {
 			statements: 64, // Goal: 98,
@@ -11,7 +8,6 @@ module.exports = {
 			lines: 65, // Goal: 98,
 		},
 	},
-	moduleDirectories: ['node_modules'],
 	moduleNameMapper: {
 		'.*\\.(css|less|styl|scss|sass)$': '<rootDir>/internals/mocks/cssModule.js',
 		'.*\\.(jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga)$':
@@ -22,6 +18,5 @@ module.exports = {
 	testRegex: 'tests/.*\\.test\\.js$',
 	snapshotSerializers: [],
 	watchPlugins: ['jest-watch-typeahead/filename', 'jest-watch-typeahead/testname'],
-	transformIgnorePatterns: ['/node_modules/(?!intl-messageformat|intl-messageformat-parser).+\\.js$'],
 	testEnvironment: 'jsdom',
 }
