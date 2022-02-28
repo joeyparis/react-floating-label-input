@@ -13,7 +13,7 @@ import PropTypes from 'prop-types'
 // NPM Packages
 import classNames from 'classnames'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faAngleDoubleDown } from '@fortawesome/free-solid-svg-icons'
+import { faAngleDoubleDown } from '@fortawesome/free-solid-svg-icons/faAngleDoubleDown'
 import scrollIntoView from 'scroll-into-view'
 import { useFloating, shift, size, getScrollParents } from '@floating-ui/react-dom'
 
