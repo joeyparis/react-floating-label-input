@@ -453,7 +453,7 @@ const FloatingLabel = ({
 	const is_autocomplete = !!autocomplete_strings
 	const is_select = input_props.type === 'select'
 	const is_list = input_props.type === 'list'
-	const display_value = is_select && selected_option ? selected_option.text : value || ''
+	const display_value = is_select && selected_option ? selected_option.text : value ?? ''
 
 	// Prevent autofill if requested or if input is select type or if autocomplete options provided
 	const should_prevent_autofill = prevent_autofill || is_select || is_autocomplete
