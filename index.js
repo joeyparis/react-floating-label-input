@@ -90,7 +90,7 @@ const InputContainer = styled.div`
 	// }
 
 	&.fl-input-container-msg-show {
-		margin-bottom: 1.5em;
+		padding-bottom: 1.5em;
 	}
 
 	input:not(:focus):not(.fl-valid):not(.fl-invalid) {
@@ -327,7 +327,7 @@ const InputContainer = styled.div`
 	}
 
 	.fl-msg {
-		bottom: -1.75em;
+		bottom: 0;
 		display: none;
 		font-size: 13px;
 		overflow: hidden;
@@ -624,7 +624,6 @@ const FloatingLabel = ({
 						})
 					}}
 					onKeyPress={(e) => {
-						console.info(e.key)
 						if (e.key === 'Enter') {
 							onChange({
 								target: {
