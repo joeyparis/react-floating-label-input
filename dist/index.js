@@ -14277,7 +14277,7 @@ var FloatingLabel = function FloatingLabel(_ref) {
   var is_autocomplete = !!autocomplete_strings;
   var is_select = input_props.type === 'select';
   var is_list = input_props.type === 'list';
-  var display_value = is_select && selected_option ? selected_option.text : value || ''; // Prevent autofill if requested or if input is select type or if autocomplete options provided
+  var display_value = is_select && selected_option ? selected_option.text : value !== null && value !== void 0 ? value : ''; // Prevent autofill if requested or if input is select type or if autocomplete options provided
 
   var should_prevent_autofill = prevent_autofill || is_select || is_autocomplete;
   var has_value = Boolean(display_value) || always_float || Boolean(placeholder) || input_props.type === 'date';
