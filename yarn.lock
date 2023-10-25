@@ -1969,35 +1969,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@floating-ui/core@npm:^0.3.0":
-  version: 0.3.1
-  resolution: "@floating-ui/core@npm:0.3.1"
-  checksum: b5b646f662994cff2feb694781c1fae2025293b74c6bbdb891a647a26b57aa8499cee8d8211f8dd9eafa53909cc24ad451545678c250162b30c37bc02046845a
-  languageName: node
-  linkType: hard
-
-"@floating-ui/dom@npm:^0.1.10":
-  version: 0.1.10
-  resolution: "@floating-ui/dom@npm:0.1.10"
-  dependencies:
-    "@floating-ui/core": ^0.3.0
-  checksum: 9a247f87ef9fd5d20ebfcb262222adce394c49a9c9b35da966794edf7aecc193ee6481cdb6e25a561c6f3d4eb4dea1dad3bc712ccfdba4aeb565d9228618ca94
-  languageName: node
-  linkType: hard
-
-"@floating-ui/react-dom@npm:^0.4.3":
-  version: 0.4.3
-  resolution: "@floating-ui/react-dom@npm:0.4.3"
-  dependencies:
-    "@floating-ui/dom": ^0.1.10
-    use-isomorphic-layout-effect: ^1.1.1
-  peerDependencies:
-    react: ">=16.8.0"
-    react-dom: ">=16.8.0"
-  checksum: 4406d4cc8c21ecd54e02db7fad26482b7d38d6d8f04cf317c370b12aaf7ebf5dc0303b2b62ce53ab4e02897fba2906ddc8731184c8e14d3283f9e6ea2d43fca9
-  languageName: node
-  linkType: hard
-
 "@fortawesome/fontawesome-common-types@npm:^0.2.36":
   version: 0.2.36
   resolution: "@fortawesome/fontawesome-common-types@npm:0.2.36"
@@ -2350,7 +2321,6 @@ __metadata:
     "@babel/register": ^7.17.0
     "@emotion/react": ^11.7.1
     "@emotion/styled": ^11.8.1
-    "@floating-ui/react-dom": ^0.4.3
     "@fortawesome/fontawesome-svg-core": ^1.2.36
     "@fortawesome/free-solid-svg-icons": ^5.15.4
     "@fortawesome/react-fontawesome": ^0.1.17
@@ -16128,7 +16098,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"use-isomorphic-layout-effect@npm:^1.0.0, use-isomorphic-layout-effect@npm:^1.1.1":
+"use-isomorphic-layout-effect@npm:^1.0.0":
   version: 1.1.1
   resolution: "use-isomorphic-layout-effect@npm:1.1.1"
   peerDependencies:
