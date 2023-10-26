@@ -692,4 +692,3 @@ FloatingLabel.defaultProps = {
 }
 
 export default FloatingLabel
-
