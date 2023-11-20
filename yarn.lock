@@ -1969,35 +1969,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@floating-ui/core@npm:^0.3.0":
-  version: 0.3.1
-  resolution: "@floating-ui/core@npm:0.3.1"
-  checksum: b5b646f662994cff2feb694781c1fae2025293b74c6bbdb891a647a26b57aa8499cee8d8211f8dd9eafa53909cc24ad451545678c250162b30c37bc02046845a
-  languageName: node
-  linkType: hard
-
-"@floating-ui/dom@npm:^0.1.10":
-  version: 0.1.10
-  resolution: "@floating-ui/dom@npm:0.1.10"
-  dependencies:
-    "@floating-ui/core": ^0.3.0
-  checksum: 9a247f87ef9fd5d20ebfcb262222adce394c49a9c9b35da966794edf7aecc193ee6481cdb6e25a561c6f3d4eb4dea1dad3bc712ccfdba4aeb565d9228618ca94
-  languageName: node
-  linkType: hard
-
-"@floating-ui/react-dom@npm:^0.4.3":
-  version: 0.4.3
-  resolution: "@floating-ui/react-dom@npm:0.4.3"
-  dependencies:
-    "@floating-ui/dom": ^0.1.10
-    use-isomorphic-layout-effect: ^1.1.1
-  peerDependencies:
-    react: ">=16.8.0"
-    react-dom: ">=16.8.0"
-  checksum: 4406d4cc8c21ecd54e02db7fad26482b7d38d6d8f04cf317c370b12aaf7ebf5dc0303b2b62ce53ab4e02897fba2906ddc8731184c8e14d3283f9e6ea2d43fca9
-  languageName: node
-  linkType: hard
-
 "@fortawesome/fontawesome-common-types@npm:^0.2.36":
   version: 0.2.36
   resolution: "@fortawesome/fontawesome-common-types@npm:0.2.36"
@@ -2318,17 +2289,17 @@ __metadata:
   linkType: hard
 
 "@joeyparis/hooks@file:../hooks::locator=%40joeyparis%2Freact-floating-label-input%40workspace%3A.":
-  version: 0.0.7
-  resolution: "@joeyparis/hooks@file:../hooks#../hooks::hash=2c42b8&locator=%40joeyparis%2Freact-floating-label-input%40workspace%3A."
+  version: 0.0.8
+  resolution: "@joeyparis/hooks@file:../hooks#../hooks::hash=3713af&locator=%40joeyparis%2Freact-floating-label-input%40workspace%3A."
   dependencies:
-    "@joeyparis/utils": ^0.0.3
+    "@joeyparis/utils": ^0.0.5
     date-fns: ^2.22.1
     match-sorter: ^6.3.1
   peerDependencies:
     react: "*"
     react-dom: "*"
     react-router-dom: "*"
-  checksum: 06822cdaf2ee77d2ba7ac8905b19c60070846167ea8b373d82077ab4022c59f0c6a1e10807389ef9488445f7d634ed1985ea5581dc957b81461358602ca8bf07
+  checksum: f35b01d1a827295b3ce8007c46be353c564039f65e9e1a8d9fa7d3d8989abfb030bcc55b42183d8a5fc7fd823af44056434ea00c52907075ecd3fffb23bcc835
   languageName: node
   linkType: hard
 
@@ -2350,7 +2321,6 @@ __metadata:
     "@babel/register": ^7.17.0
     "@emotion/react": ^11.7.1
     "@emotion/styled": ^11.8.1
-    "@floating-ui/react-dom": ^0.4.3
     "@fortawesome/fontawesome-svg-core": ^1.2.36
     "@fortawesome/free-solid-svg-icons": ^5.15.4
     "@fortawesome/react-fontawesome": ^0.1.17
@@ -2401,14 +2371,13 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@joeyparis/utils@npm:^0.0.3":
-  version: 0.0.3
-  resolution: "@joeyparis/utils@npm:0.0.3"
+"@joeyparis/utils@npm:^0.0.5":
+  version: 0.0.5
+  resolution: "@joeyparis/utils@npm:0.0.5"
   dependencies:
     file-saver: ^2.0.5
-    moment: ^2.29.1
     phone-formatter: ^0.0.2
-  checksum: d3f85bb6231f07cf43f05974d012a00a367f04a1382bdca076b2d5de737acf207d16deddf6000845da35466afe47c8ca7e5d913f04d05d6601cb2c5045fd1288
+  checksum: f23c5a4693fec933476bca6eac5c5fa5e909922b06824ac4963828c617ace3a61f5c61f6d227470831a8bcd65e9f08bec0065af55ab5984dda838b4f2a8ffbd3
   languageName: node
   linkType: hard
 
@@ -11948,13 +11917,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"moment@npm:^2.29.1":
-  version: 2.29.1
-  resolution: "moment@npm:2.29.1"
-  checksum: 1e14d5f422a2687996be11dd2d50c8de3bd577c4a4ca79ba5d02c397242a933e5b941655de6c8cb90ac18f01cc4127e55b4a12ae3c527a6c0a274e455979345e
-  languageName: node
-  linkType: hard
-
 "move-concurrently@npm:^1.0.1":
   version: 1.0.1
   resolution: "move-concurrently@npm:1.0.1"
@@ -16128,7 +16090,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"use-isomorphic-layout-effect@npm:^1.0.0, use-isomorphic-layout-effect@npm:^1.1.1":
+"use-isomorphic-layout-effect@npm:^1.0.0":
   version: 1.1.1
   resolution: "use-isomorphic-layout-effect@npm:1.1.1"
   peerDependencies:
