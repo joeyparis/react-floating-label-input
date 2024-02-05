@@ -20,6 +20,9 @@ exports[`<FloatingLabel /> matches snapshots 1`] = `
       <span
         class="fl-input-bar"
       />
+      <div
+        style="position: relative; order: 10;"
+      />
     </div>
   </div>
 </body>
