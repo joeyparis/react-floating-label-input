@@ -137,20 +137,8 @@ function _slicedToArray$1(arr, i) {
   return _arrayWithHoles$1(arr) || _iterableToArrayLimit$1(arr, i) || _unsupportedIterableToArray$1(arr, i) || _nonIterableRest$1();
 }
 
-function _toConsumableArray$1(arr) {
-  return _arrayWithoutHoles$1(arr) || _iterableToArray$1(arr) || _unsupportedIterableToArray$1(arr) || _nonIterableSpread$1();
-}
-
-function _arrayWithoutHoles$1(arr) {
-  if (Array.isArray(arr)) return _arrayLikeToArray$1(arr);
-}
-
 function _arrayWithHoles$1(arr) {
   if (Array.isArray(arr)) return arr;
-}
-
-function _iterableToArray$1(iter) {
-  if (typeof Symbol !== "undefined" && iter[Symbol.iterator] != null || iter["@@iterator"] != null) return Array.from(iter);
 }
 
 function _iterableToArrayLimit$1(arr, i) {
@@ -198,10 +186,6 @@ function _arrayLikeToArray$1(arr, len) {
   for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i];
 
   return arr2;
-}
-
-function _nonIterableSpread$1() {
-  throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
 }
 
 function _nonIterableRest$1() {
@@ -5718,1050 +5702,6 @@ var scrollIntoView = function (target, settings, callback) {
   return scrollingElements.reduce((cancel, parent, index) => transitionScrollTo(target, parent, settings, scrollingElements[index + 1], done), null);
 };
 
-function getBasePlacement(placement) {
-  return placement.split('-')[0];
-}
-
-function getAlignment(placement) {
-  return placement.split('-')[1];
-}
-
-function getMainAxisFromPlacement(placement) {
-  return ['top', 'bottom'].includes(getBasePlacement(placement)) ? 'x' : 'y';
-}
-
-function getLengthFromAxis(axis) {
-  return axis === 'y' ? 'height' : 'width';
-}
-
-function computeCoordsFromPlacement(_ref) {
-  let {
-    reference,
-    floating,
-    placement
-  } = _ref;
-  const commonX = reference.x + reference.width / 2 - floating.width / 2;
-  const commonY = reference.y + reference.height / 2 - floating.height / 2;
-  let coords;
-
-  switch (getBasePlacement(placement)) {
-    case 'top':
-      coords = {
-        x: commonX,
-        y: reference.y - floating.height
-      };
-      break;
-
-    case 'bottom':
-      coords = {
-        x: commonX,
-        y: reference.y + reference.height
-      };
-      break;
-
-    case 'right':
-      coords = {
-        x: reference.x + reference.width,
-        y: commonY
-      };
-      break;
-
-    case 'left':
-      coords = {
-        x: reference.x - floating.width,
-        y: commonY
-      };
-      break;
-
-    default:
-      coords = {
-        x: reference.x,
-        y: reference.y
-      };
-  }
-
-  const mainAxis = getMainAxisFromPlacement(placement);
-  const length = getLengthFromAxis(mainAxis);
-
-  switch (getAlignment(placement)) {
-    case 'start':
-      coords[mainAxis] = coords[mainAxis] - (reference[length] / 2 - floating[length] / 2);
-      break;
-
-    case 'end':
-      coords[mainAxis] = coords[mainAxis] + (reference[length] / 2 - floating[length] / 2);
-      break;
-  }
-
-  return coords;
-}
-
-const computePosition$1 = async (reference, floating, config) => {
-  const {
-    placement = 'bottom',
-    strategy = 'absolute',
-    middleware = [],
-    platform
-  } = config;
-
-  if (process.env.NODE_ENV !== "production") {
-    if (platform == null) {
-      console.error(['Floating UI: `platform` property was not passed to config. If you', 'want to use Floating UI on the web, install @floating-ui/dom', 'instead of the /core package. Otherwise, you can create your own', '`platform`: https://floating-ui.com/docs/platform'].join(' '));
-    }
-
-    if (middleware.filter(_ref => {
-      let {
-        name
-      } = _ref;
-      return name === 'autoPlacement' || name === 'flip';
-    }).length > 1) {
-      throw new Error(['Floating UI: duplicate `flip` and/or `autoPlacement`', 'middleware detected. This will lead to an infinite loop. Ensure only', 'one of either has been passed to the `middleware` array.'].join(' '));
-    }
-  }
-
-  let rects = await platform.getElementRects({
-    reference,
-    floating,
-    strategy
-  });
-  let {
-    x,
-    y
-  } = computeCoordsFromPlacement({ ...rects,
-    placement
-  });
-  let statefulPlacement = placement;
-  let middlewareData = {};
-  let _debug_loop_count_ = 0;
-
-  for (let i = 0; i < middleware.length; i++) {
-    if (process.env.NODE_ENV !== "production") {
-      _debug_loop_count_++;
-
-      if (_debug_loop_count_ > 100) {
-        throw new Error(['Floating UI: The middleware lifecycle appears to be', 'running in an infinite loop. This is usually caused by a `reset`', 'continually being returned without a break condition.'].join(' '));
-      }
-    }
-
-    const {
-      name,
-      fn
-    } = middleware[i];
-    const {
-      x: nextX,
-      y: nextY,
-      data,
-      reset
-    } = await fn({
-      x,
-      y,
-      initialPlacement: placement,
-      placement: statefulPlacement,
-      strategy,
-      middlewareData,
-      rects,
-      platform,
-      elements: {
-        reference,
-        floating
-      }
-    });
-    x = nextX != null ? nextX : x;
-    y = nextY != null ? nextY : y;
-    middlewareData = { ...middlewareData,
-      [name]: data != null ? data : {}
-    };
-
-    if (reset) {
-      if (typeof reset === 'object') {
-        if (reset.placement) {
-          statefulPlacement = reset.placement;
-        }
-
-        if (reset.rects) {
-          rects = reset.rects === true ? await platform.getElementRects({
-            reference,
-            floating,
-            strategy
-          }) : reset.rects;
-        }
-
-        ({
-          x,
-          y
-        } = computeCoordsFromPlacement({ ...rects,
-          placement: statefulPlacement
-        }));
-      }
-
-      i = -1;
-      continue;
-    }
-  }
-
-  return {
-    x,
-    y,
-    placement: statefulPlacement,
-    strategy,
-    middlewareData
-  };
-};
-
-function expandPaddingObject(padding) {
-  return {
-    top: 0,
-    right: 0,
-    bottom: 0,
-    left: 0,
-    ...padding
-  };
-}
-
-function getSideObjectFromPadding(padding) {
-  return typeof padding !== 'number' ? expandPaddingObject(padding) : {
-    top: padding,
-    right: padding,
-    bottom: padding,
-    left: padding
-  };
-}
-
-function rectToClientRect(rect) {
-  return { ...rect,
-    top: rect.y,
-    left: rect.x,
-    right: rect.x + rect.width,
-    bottom: rect.y + rect.height
-  };
-}
-
-async function detectOverflow(middlewareArguments, options) {
-  if (options === void 0) {
-    options = {};
-  }
-
-  const {
-    x,
-    y,
-    platform,
-    rects,
-    elements,
-    strategy
-  } = middlewareArguments;
-  const {
-    boundary = 'clippingParents',
-    rootBoundary = 'viewport',
-    elementContext = 'floating',
-    altBoundary = false,
-    padding = 0
-  } = options;
-  const paddingObject = getSideObjectFromPadding(padding);
-  const altContext = elementContext === 'floating' ? 'reference' : 'floating';
-  const element = elements[altBoundary ? altContext : elementContext];
-  const clippingClientRect = await platform.getClippingClientRect({
-    element: (await platform.isElement(element)) ? element : element.contextElement || (await platform.getDocumentElement({
-      element: elements.floating
-    })),
-    boundary,
-    rootBoundary
-  });
-  const elementClientRect = rectToClientRect(await platform.convertOffsetParentRelativeRectToViewportRelativeRect({
-    rect: elementContext === 'floating' ? { ...rects.floating,
-      x,
-      y
-    } : rects.reference,
-    offsetParent: await platform.getOffsetParent({
-      element: elements.floating
-    }),
-    strategy
-  })); // positive = overflowing the clipping rect
-  // 0 or negative = within the clipping rect
-
-  return {
-    top: clippingClientRect.top - elementClientRect.top + paddingObject.top,
-    bottom: elementClientRect.bottom - clippingClientRect.bottom + paddingObject.bottom,
-    left: clippingClientRect.left - elementClientRect.left + paddingObject.left,
-    right: elementClientRect.right - clippingClientRect.right + paddingObject.right
-  };
-}
-
-const min$2 = Math.min;
-const max$2 = Math.max;
-
-function within(min$1, value, max$1) {
-  return max$2(min$1, min$2(value, max$1));
-}
-
-function getCrossAxis(axis) {
-  return axis === 'x' ? 'y' : 'x';
-}
-
-const shift = function (options) {
-  if (options === void 0) {
-    options = {};
-  }
-
-  return {
-    name: 'shift',
-    options,
-
-    async fn(middlewareArguments) {
-      const {
-        x,
-        y,
-        placement
-      } = middlewareArguments;
-      const {
-        mainAxis: checkMainAxis = true,
-        crossAxis: checkCrossAxis = false,
-        limiter = {
-          fn: _ref => {
-            let {
-              x,
-              y
-            } = _ref;
-            return {
-              x,
-              y
-            };
-          }
-        },
-        ...detectOverflowOptions
-      } = options;
-      const coords = {
-        x,
-        y
-      };
-      const overflow = await detectOverflow(middlewareArguments, detectOverflowOptions);
-      const mainAxis = getMainAxisFromPlacement(getBasePlacement(placement));
-      const crossAxis = getCrossAxis(mainAxis);
-      let mainAxisCoord = coords[mainAxis];
-      let crossAxisCoord = coords[crossAxis];
-
-      if (checkMainAxis) {
-        const minSide = mainAxis === 'y' ? 'top' : 'left';
-        const maxSide = mainAxis === 'y' ? 'bottom' : 'right';
-        const min = mainAxisCoord + overflow[minSide];
-        const max = mainAxisCoord - overflow[maxSide];
-        mainAxisCoord = within(min, mainAxisCoord, max);
-      }
-
-      if (checkCrossAxis) {
-        const minSide = crossAxis === 'y' ? 'top' : 'left';
-        const maxSide = crossAxis === 'y' ? 'bottom' : 'right';
-        const min = crossAxisCoord + overflow[minSide];
-        const max = crossAxisCoord - overflow[maxSide];
-        crossAxisCoord = within(min, crossAxisCoord, max);
-      }
-
-      const limitedCoords = limiter.fn({ ...middlewareArguments,
-        [mainAxis]: mainAxisCoord,
-        [crossAxis]: crossAxisCoord
-      });
-      return { ...limitedCoords,
-        data: {
-          x: limitedCoords.x - x,
-          y: limitedCoords.y - y
-        }
-      };
-    }
-
-  };
-};
-
-const size = function (options) {
-  if (options === void 0) {
-    options = {};
-  }
-
-  return {
-    name: 'size',
-    options,
-
-    async fn(middlewareArguments) {
-      var _middlewareData$size;
-
-      const {
-        placement,
-        rects,
-        middlewareData
-      } = middlewareArguments;
-      const {
-        apply,
-        ...detectOverflowOptions
-      } = options;
-
-      if ((_middlewareData$size = middlewareData.size) != null && _middlewareData$size.skip) {
-        return {};
-      }
-
-      const overflow = await detectOverflow(middlewareArguments, detectOverflowOptions);
-      const basePlacement = getBasePlacement(placement);
-      const isEnd = getAlignment(placement) === 'end';
-      let heightSide;
-      let widthSide;
-
-      if (basePlacement === 'top' || basePlacement === 'bottom') {
-        heightSide = basePlacement;
-        widthSide = isEnd ? 'left' : 'right';
-      } else {
-        widthSide = basePlacement;
-        heightSide = isEnd ? 'top' : 'bottom';
-      }
-
-      const xMin = max$2(overflow.left, 0);
-      const xMax = max$2(overflow.right, 0);
-      const yMin = max$2(overflow.top, 0);
-      const yMax = max$2(overflow.bottom, 0);
-      const dimensions = {
-        height: rects.floating.height - (['left', 'right'].includes(placement) ? 2 * (yMin !== 0 || yMax !== 0 ? yMin + yMax : max$2(overflow.top, overflow.bottom)) : overflow[heightSide]),
-        width: rects.floating.width - (['top', 'bottom'].includes(placement) ? 2 * (xMin !== 0 || xMax !== 0 ? xMin + xMax : max$2(overflow.left, overflow.right)) : overflow[widthSide])
-      };
-      apply == null ? void 0 : apply({ ...dimensions,
-        ...rects
-      });
-      return {
-        data: {
-          skip: true
-        },
-        reset: {
-          rects: true
-        }
-      };
-    }
-
-  };
-};
-
-function isWindow(value) {
-  return (value == null ? void 0 : value.toString()) === '[object Window]';
-}
-
-function getWindow(node) {
-  if (node == null) {
-    return window;
-  }
-
-  if (!isWindow(node)) {
-    const ownerDocument = node.ownerDocument;
-    return ownerDocument ? ownerDocument.defaultView || window : window;
-  }
-
-  return node;
-}
-
-function getComputedStyle$1(element) {
-  return getWindow(element).getComputedStyle(element);
-}
-
-function getNodeName(node) {
-  return isWindow(node) ? '' : node ? (node.nodeName || '').toLowerCase() : '';
-}
-
-function isHTMLElement(value) {
-  return value instanceof getWindow(value).HTMLElement;
-}
-
-function isElement(value) {
-  return value instanceof getWindow(value).Element;
-}
-
-function isNode(value) {
-  return value instanceof getWindow(value).Node;
-}
-
-function isShadowRoot(node) {
-  const OwnElement = getWindow(node).ShadowRoot;
-  return node instanceof OwnElement || node instanceof ShadowRoot;
-}
-
-function isScrollParent(element) {
-  // Firefox wants us to check `-x` and `-y` variations as well
-  const {
-    overflow,
-    overflowX,
-    overflowY
-  } = getComputedStyle$1(element);
-  return /auto|scroll|overlay|hidden/.test(overflow + overflowY + overflowX);
-}
-
-function isTableElement(element) {
-  return ['table', 'td', 'th'].includes(getNodeName(element));
-}
-
-function isContainingBlock(element) {
-  // TODO: Try and use feature detection here instead
-  const isFirefox = navigator.userAgent.toLowerCase().includes('firefox');
-  const css = getComputedStyle$1(element); // This is non-exhaustive but covers the most common CSS properties that
-  // create a containing block.
-  // https://developer.mozilla.org/en-US/docs/Web/CSS/Containing_block#identifying_the_containing_block
-
-  return css.transform !== 'none' || css.perspective !== 'none' || css.contain === 'paint' || ['transform', 'perspective'].includes(css.willChange) || isFirefox && css.willChange === 'filter' || isFirefox && (css.filter ? css.filter !== 'none' : false);
-}
-
-const min$1 = Math.min;
-const max$1 = Math.max;
-const round = Math.round;
-
-function getBoundingClientRect(element, includeScale) {
-  if (includeScale === void 0) {
-    includeScale = false;
-  }
-
-  const clientRect = element.getBoundingClientRect();
-  let scaleX = 1;
-  let scaleY = 1;
-
-  if (includeScale && isHTMLElement(element)) {
-    scaleX = element.offsetWidth > 0 ? round(clientRect.width) / element.offsetWidth || 1 : 1;
-    scaleY = element.offsetHeight > 0 ? round(clientRect.height) / element.offsetHeight || 1 : 1;
-  }
-
-  return {
-    width: clientRect.width / scaleX,
-    height: clientRect.height / scaleY,
-    top: clientRect.top / scaleY,
-    right: clientRect.right / scaleX,
-    bottom: clientRect.bottom / scaleY,
-    left: clientRect.left / scaleX,
-    x: clientRect.left / scaleX,
-    y: clientRect.top / scaleY
-  };
-}
-
-function getDocumentElement(node) {
-  return ((isNode(node) ? node.ownerDocument : node.document) || window.document).documentElement;
-}
-
-function getNodeScroll(element) {
-  if (isWindow(element)) {
-    return {
-      scrollLeft: element.pageXOffset,
-      scrollTop: element.pageYOffset
-    };
-  }
-
-  return {
-    scrollLeft: element.scrollLeft,
-    scrollTop: element.scrollTop
-  };
-}
-
-function getWindowScrollBarX(element) {
-  // If <html> has a CSS width greater than the viewport, then this will be
-  // incorrect for RTL.
-  return getBoundingClientRect(getDocumentElement(element)).left + getNodeScroll(element).scrollLeft;
-}
-
-function isScaled(element) {
-  const rect = getBoundingClientRect(element);
-  return round(rect.width) !== element.offsetWidth || round(rect.height) !== element.offsetHeight;
-}
-
-function getRectRelativeToOffsetParent(element, offsetParent, strategy) {
-  const isOffsetParentAnElement = isHTMLElement(offsetParent);
-  const documentElement = getDocumentElement(offsetParent);
-  const rect = getBoundingClientRect(element, isOffsetParentAnElement && isScaled(offsetParent));
-  let scroll = {
-    scrollLeft: 0,
-    scrollTop: 0
-  };
-  const offsets = {
-    x: 0,
-    y: 0
-  };
-
-  if (isOffsetParentAnElement || !isOffsetParentAnElement && strategy !== 'fixed') {
-    if (getNodeName(offsetParent) !== 'body' || isScrollParent(documentElement)) {
-      scroll = getNodeScroll(offsetParent);
-    }
-
-    if (isHTMLElement(offsetParent)) {
-      const offsetRect = getBoundingClientRect(offsetParent, true);
-      offsets.x = offsetRect.x + offsetParent.clientLeft;
-      offsets.y = offsetRect.y + offsetParent.clientTop;
-    } else if (documentElement) {
-      offsets.x = getWindowScrollBarX(documentElement);
-    }
-  }
-
-  return {
-    x: rect.left + scroll.scrollLeft - offsets.x,
-    y: rect.top + scroll.scrollTop - offsets.y,
-    width: rect.width,
-    height: rect.height
-  };
-}
-
-function getParentNode(node) {
-  if (getNodeName(node) === 'html') {
-    return node;
-  }
-
-  return (// this is a quicker (but less type safe) way to save quite some bytes from the bundle
-    // @ts-ignore
-    node.assignedSlot || // step into the shadow DOM of the parent of a slotted node
-    node.parentNode || ( // DOM Element detected
-    isShadowRoot(node) ? node.host : null) || // ShadowRoot detected
-    getDocumentElement(node) // fallback
-
-  );
-}
-
-function getTrueOffsetParent(element) {
-  if (!isHTMLElement(element) || getComputedStyle(element).position === 'fixed') {
-    return null;
-  }
-
-  return element.offsetParent;
-}
-
-function getContainingBlock(element) {
-  let currentNode = getParentNode(element);
-
-  while (isHTMLElement(currentNode) && !['html', 'body'].includes(getNodeName(currentNode))) {
-    if (isContainingBlock(currentNode)) {
-      return currentNode;
-    } else {
-      currentNode = currentNode.parentNode;
-    }
-  }
-
-  return null;
-} // Gets the closest ancestor positioned element. Handles some edge cases,
-// such as table ancestors and cross browser bugs.
-
-
-function getOffsetParent(element) {
-  const window = getWindow(element);
-  let offsetParent = getTrueOffsetParent(element);
-
-  while (offsetParent && isTableElement(offsetParent) && getComputedStyle(offsetParent).position === 'static') {
-    offsetParent = getTrueOffsetParent(offsetParent);
-  }
-
-  if (offsetParent && (getNodeName(offsetParent) === 'html' || getNodeName(offsetParent) === 'body' && getComputedStyle(offsetParent).position === 'static' && !isContainingBlock(offsetParent))) {
-    return window;
-  }
-
-  return offsetParent || getContainingBlock(element) || window;
-}
-
-function getDimensions(element) {
-  return {
-    width: element.offsetWidth,
-    height: element.offsetHeight
-  };
-}
-
-function convertOffsetParentRelativeRectToViewportRelativeRect(_ref) {
-  let {
-    rect,
-    offsetParent,
-    strategy
-  } = _ref;
-  const isOffsetParentAnElement = isHTMLElement(offsetParent);
-  const documentElement = getDocumentElement(offsetParent);
-
-  if (offsetParent === documentElement) {
-    return rect;
-  }
-
-  let scroll = {
-    scrollLeft: 0,
-    scrollTop: 0
-  };
-  const offsets = {
-    x: 0,
-    y: 0
-  };
-
-  if (isOffsetParentAnElement || !isOffsetParentAnElement && strategy !== 'fixed') {
-    if (getNodeName(offsetParent) !== 'body' || isScrollParent(documentElement)) {
-      scroll = getNodeScroll(offsetParent);
-    }
-
-    if (isHTMLElement(offsetParent)) {
-      const offsetRect = getBoundingClientRect(offsetParent, true);
-      offsets.x = offsetRect.x + offsetParent.clientLeft;
-      offsets.y = offsetRect.y + offsetParent.clientTop;
-    } // This doesn't appear to be need to be negated.
-    // else if (documentElement) {
-    //   offsets.x = getWindowScrollBarX(documentElement);
-    // }
-
-  }
-
-  return { ...rect,
-    x: rect.x - scroll.scrollLeft + offsets.x,
-    y: rect.y - scroll.scrollTop + offsets.y
-  };
-}
-
-function getViewportRect(element) {
-  const win = getWindow(element);
-  const html = getDocumentElement(element);
-  const visualViewport = win.visualViewport;
-  let width = html.clientWidth;
-  let height = html.clientHeight;
-  let x = 0;
-  let y = 0;
-
-  if (visualViewport) {
-    width = visualViewport.width;
-    height = visualViewport.height; // Uses Layout Viewport (like Chrome; Safari does not currently)
-    // In Chrome, it returns a value very close to 0 (+/-) but contains rounding
-    // errors due to floating point numbers, so we need to check precision.
-    // Safari returns a number <= 0, usually < -1 when pinch-zoomed
-
-    if (Math.abs(win.innerWidth / visualViewport.scale - visualViewport.width) < 0.01) {
-      x = visualViewport.offsetLeft;
-      y = visualViewport.offsetTop;
-    }
-  }
-
-  return {
-    width,
-    height,
-    x,
-    y
-  };
-} // of the `<html>` and `<body>` rect bounds if horizontally scrollable
-
-
-function getDocumentRect(element) {
-  var _element$ownerDocumen;
-
-  const html = getDocumentElement(element);
-  const scroll = getNodeScroll(element);
-  const body = (_element$ownerDocumen = element.ownerDocument) == null ? void 0 : _element$ownerDocumen.body;
-  const width = max$1(html.scrollWidth, html.clientWidth, body ? body.scrollWidth : 0, body ? body.clientWidth : 0);
-  const height = max$1(html.scrollHeight, html.clientHeight, body ? body.scrollHeight : 0, body ? body.clientHeight : 0);
-  let x = -scroll.scrollLeft + getWindowScrollBarX(element);
-  const y = -scroll.scrollTop;
-
-  if (getComputedStyle$1(body || html).direction === 'rtl') {
-    x += max$1(html.clientWidth, body ? body.clientWidth : 0) - width;
-  }
-
-  return {
-    width,
-    height,
-    x,
-    y
-  };
-}
-
-function getScrollParent(node) {
-  if (['html', 'body', '#document'].includes(getNodeName(node))) {
-    // @ts-ignore assume body is always available
-    return node.ownerDocument.body;
-  }
-
-  if (isHTMLElement(node) && isScrollParent(node)) {
-    return node;
-  }
-
-  return getScrollParent(getParentNode(node));
-}
-
-function getScrollParents(node, list) {
-  var _node$ownerDocument;
-
-  if (list === void 0) {
-    list = [];
-  }
-
-  const scrollParent = getScrollParent(node);
-  const isBody = scrollParent === ((_node$ownerDocument = node.ownerDocument) == null ? void 0 : _node$ownerDocument.body);
-  const win = getWindow(scrollParent);
-  const target = isBody ? [win].concat(win.visualViewport || [], isScrollParent(scrollParent) ? scrollParent : []) : scrollParent;
-  const updatedList = list.concat(target);
-  return isBody ? updatedList : // @ts-ignore: isBody tells us target will be an HTMLElement here
-  updatedList.concat(getScrollParents(getParentNode(target)));
-}
-
-function contains(parent, child) {
-  const rootNode = child.getRootNode == null ? void 0 : child.getRootNode(); // First, attempt with faster native method
-
-  if (parent.contains(child)) {
-    return true;
-  } // then fallback to custom implementation with Shadow DOM support
-  else if (rootNode && isShadowRoot(rootNode)) {
-    let next = child;
-
-    do {
-      // use `===` replace node.isSameNode()
-      if (next && parent === next) {
-        return true;
-      } // @ts-ignore: need a better way to handle this...
-
-
-      next = next.parentNode || next.host;
-    } while (next);
-  }
-
-  return false;
-}
-
-function getInnerBoundingClientRect(element) {
-  const clientRect = getBoundingClientRect(element);
-  const top = clientRect.top + element.clientTop;
-  const left = clientRect.left + element.clientLeft;
-  return {
-    top,
-    left,
-    x: left,
-    y: top,
-    right: left + element.clientWidth,
-    bottom: top + element.clientHeight,
-    width: element.clientWidth,
-    height: element.clientHeight
-  };
-}
-
-function getClientRectFromClippingParent(element, clippingParent) {
-  if (clippingParent === 'viewport') {
-    return rectToClientRect(getViewportRect(element));
-  }
-
-  if (isElement(clippingParent)) {
-    return getInnerBoundingClientRect(clippingParent);
-  }
-
-  return rectToClientRect(getDocumentRect(getDocumentElement(element)));
-} // A "clipping parent" is an overflowable container with the characteristic of
-// clipping (or hiding) overflowing elements with a position different from
-// `initial`
-
-
-function getClippingParents(element) {
-  const clippingParents = getScrollParents(getParentNode(element));
-  const canEscapeClipping = ['absolute', 'fixed'].includes(getComputedStyle$1(element).position);
-  const clipperElement = canEscapeClipping && isHTMLElement(element) ? getOffsetParent(element) : element;
-
-  if (!isElement(clipperElement)) {
-    return [];
-  } // @ts-ignore isElement check ensures we return Array<Element>
-
-
-  return clippingParents.filter(clippingParent => isElement(clippingParent) && contains(clippingParent, clipperElement) && getNodeName(clippingParent) !== 'body');
-} // Gets the maximum area that the element is visible in due to any number of
-// clipping parents
-
-
-function getClippingClientRect(_ref) {
-  let {
-    element,
-    boundary,
-    rootBoundary
-  } = _ref;
-  const mainClippingParents = boundary === 'clippingParents' ? getClippingParents(element) : [].concat(boundary);
-  const clippingParents = [...mainClippingParents, rootBoundary];
-  const firstClippingParent = clippingParents[0];
-  const clippingRect = clippingParents.reduce((accRect, clippingParent) => {
-    const rect = getClientRectFromClippingParent(element, clippingParent);
-    accRect.top = max$1(rect.top, accRect.top);
-    accRect.right = min$1(rect.right, accRect.right);
-    accRect.bottom = min$1(rect.bottom, accRect.bottom);
-    accRect.left = max$1(rect.left, accRect.left);
-    return accRect;
-  }, getClientRectFromClippingParent(element, firstClippingParent));
-  clippingRect.width = clippingRect.right - clippingRect.left;
-  clippingRect.height = clippingRect.bottom - clippingRect.top;
-  clippingRect.x = clippingRect.left;
-  clippingRect.y = clippingRect.top;
-  return clippingRect;
-}
-
-const platform = {
-  getElementRects: _ref => {
-    let {
-      reference,
-      floating,
-      strategy
-    } = _ref;
-    return {
-      reference: getRectRelativeToOffsetParent(reference, getOffsetParent(floating), strategy),
-      floating: { ...getDimensions(floating),
-        x: 0,
-        y: 0
-      }
-    };
-  },
-  convertOffsetParentRelativeRectToViewportRelativeRect: args => convertOffsetParentRelativeRectToViewportRelativeRect(args),
-  getOffsetParent: _ref2 => {
-    let {
-      element
-    } = _ref2;
-    return getOffsetParent(element);
-  },
-  isElement: value => isElement(value),
-  getDocumentElement: _ref3 => {
-    let {
-      element
-    } = _ref3;
-    return getDocumentElement(element);
-  },
-  getClippingClientRect: args => getClippingClientRect(args),
-  getDimensions: _ref4 => {
-    let {
-      element
-    } = _ref4;
-    return getDimensions(element);
-  },
-  getClientRects: _ref5 => {
-    let {
-      element
-    } = _ref5;
-    return element.getClientRects();
-  }
-};
-
-const computePosition = (reference, floating, options) => computePosition$1(reference, floating, {
-  platform,
-  ...options
-});
-
-var index = typeof document !== 'undefined' ? React.useLayoutEffect : React.useEffect; // Fork of `fast-deep-equal` that only does the comparisons we need and compares
-// functions
-
-function deepEqual(a, b) {
-  if (a === b) {
-    return true;
-  }
-
-  if (typeof a !== typeof b) {
-    return false;
-  }
-
-  if (typeof a === 'function' && a.toString() === b.toString()) {
-    return true;
-  }
-
-  let length, i, keys;
-
-  if (a && b && typeof a == 'object') {
-    if (Array.isArray(a)) {
-      length = a.length;
-      if (length != b.length) return false;
-
-      for (i = length; i-- !== 0;) {
-        if (!deepEqual(a[i], b[i])) {
-          return false;
-        }
-      }
-
-      return true;
-    }
-
-    keys = Object.keys(a);
-    length = keys.length;
-
-    if (length !== Object.keys(b).length) {
-      return false;
-    }
-
-    for (i = length; i-- !== 0;) {
-      if (!Object.prototype.hasOwnProperty.call(b, keys[i])) {
-        return false;
-      }
-    }
-
-    for (i = length; i-- !== 0;) {
-      const key = keys[i];
-
-      if (key === '_owner' && a.$$typeof) {
-        continue;
-      }
-
-      if (!deepEqual(a[key], b[key])) {
-        return false;
-      }
-    }
-
-    return true;
-  }
-
-  return a !== a && b !== b;
-}
-
-function useFloating(_temp) {
-  let {
-    middleware,
-    placement,
-    strategy
-  } = _temp === void 0 ? {} : _temp;
-  const reference = React.useRef(null);
-  const floating = React.useRef(null);
-  const [data, setData] = React.useState({
-    // Setting these to `null` will allow the consumer to determine if
-    // `computePosition()` has run yet
-    x: null,
-    y: null,
-    strategy: strategy != null ? strategy : 'absolute',
-    placement: 'bottom',
-    middlewareData: {}
-  });
-  const [latestMiddleware, setLatestMiddleware] = React.useState(middleware);
-
-  if (!deepEqual(latestMiddleware == null ? void 0 : latestMiddleware.map(_ref => {
-    let {
-      options
-    } = _ref;
-    return options;
-  }), middleware == null ? void 0 : middleware.map(_ref2 => {
-    let {
-      options
-    } = _ref2;
-    return options;
-  }))) {
-    setLatestMiddleware(middleware);
-  }
-
-  const isMountedRef = React.useRef(true);
-  index(() => {
-    isMountedRef.current = true;
-    return () => {
-      isMountedRef.current = false;
-    };
-  }, []);
-  const update = React.useCallback(() => {
-    if (!reference.current || !floating.current) {
-      return;
-    }
-
-    computePosition(reference.current, floating.current, {
-      middleware: latestMiddleware,
-      placement,
-      strategy
-    }).then(data => {
-      if (isMountedRef.current) {
-        setData(data);
-      }
-    });
-  }, [latestMiddleware, placement, strategy]);
-  index(update, [update]);
-  const setReference = React.useCallback(node => {
-    reference.current = node;
-    update();
-  }, [update]);
-  const setFloating = React.useCallback(node => {
-    floating.current = node;
-    update();
-  }, [update]);
-  return React.useMemo(() => ({ ...data,
-    update,
-    reference: setReference,
-    floating: setFloating,
-    refs: {
-      reference,
-      floating
-    }
-  }), [data, update, setReference, setFloating]);
-}
-
 var dist$1 = {};
 
 var r,
@@ -8695,6 +7635,43 @@ var react = React__default["default"];
 
 var reactRouterDom = require$$1;
 
+const useShiftSelect = (onChange, options = []) => {
+  const [previous_selected, setPreviousSelected] = react.useState(null);
+  const [previous_checked, setPreviousChecked] = react.useState(false);
+  const [current_selected, setCurrentSelected] = react.useState(null);
+  const handleSelect = react.useCallback((event, item) => {
+    if (event.nativeEvent.shiftKey) {
+      const current_index = options.findIndex(o => o.key === item.key);
+      const previous_index = options.findIndex(o => o.key === (previous_selected === null || previous_selected === void 0 ? void 0 : previous_selected.key));
+      const previous_current = options.findIndex(o => o.key === (current_selected === null || current_selected === void 0 ? void 0 : current_selected.key));
+      const start = Math.min(previous_index, current_index);
+      const end = Math.max(previous_index, current_index);
+
+      if (start > -1 && end > -1) {
+        onChange(previous_checked, options.slice(start, end + 1));
+
+        if (previous_current > end) {
+          onChange(!previous_checked, options.slice(end + 1, previous_current + 1));
+        }
+
+        if (previous_current < start) {
+          onChange(!previous_checked, options.slice(previous_current, start));
+        }
+
+        setCurrentSelected(item);
+        return;
+      }
+    } else {
+      setPreviousSelected(item);
+      setCurrentSelected(null);
+      setPreviousChecked(event.target.checked);
+    }
+
+    onChange(event.target.checked, [item]);
+  }, [onChange, options, previous_selected, setPreviousSelected, previous_checked, setPreviousChecked, current_selected, setCurrentSelected]);
+  return handleSelect;
+};
+
 function requiredArgs$1(required, args) {
   if (args.length < required) {
     throw new TypeError(required + ' argument' + (required > 1 ? 's' : '') + ' required, but only ' + args.length + ' present');
@@ -8861,6 +7838,24 @@ const decodeHTMLEntities = text => {
 };
 
 const escapeRegExp = str => str.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
+
+const sleep = (delay = 500) => new Promise(r => setTimeout(r, delay));
+
+const exponentialBackOff = async (callback, max_depth, depth = 0) => {
+  const complete = await callback();
+
+  if (!complete) {
+    if (!isNaN(max_depth) && depth + 1 >= max_depth) {
+      console.info('Max depth reached');
+      return complete;
+    }
+
+    await sleep(2 ** depth * 10);
+    return exponentialBackOff(callback, max_depth, depth + 1);
+  } else {
+    return complete;
+  }
+};
 
 const factorial = n => {
   const sign = BigInt(Math.sign(n));
@@ -11867,8 +10862,9 @@ const listToText = words => {
       return words.join(' and ');
 
     default:
-      const last = words.pop();
-      return `${words.join(', ')}, and ${last}`;
+      const words_copy = [...words];
+      const last = words_copy.pop();
+      return `${words_copy.join(', ')}, and ${last}`;
   }
 };
 
@@ -11976,8 +10972,8 @@ const min = arr => {
 const optionsFromStrings = string_array => {
   if (Array.isArray(string_array)) {
     return string_array.map(str => ({
-      text: str,
-      value: str
+      text: str['text'] || str,
+      value: str['value'] || str
     }));
   }
 
@@ -12229,8 +11225,6 @@ const shuffle = arr => {
 // }
 
 
-const sleep = (delay = 500) => new Promise(r => setTimeout(r, delay));
-
 const sortCurrency = (a, b) => parseCurrency(a) > parseCurrency(b) ? 1 : -1;
 /**
  * @name isDate
@@ -12360,6 +11354,7 @@ dist.coalesce = coalesce;
 dist.decodeHTMLEntities = decodeHTMLEntities;
 dist.dig = dig;
 dist.escapeRegExp = escapeRegExp;
+dist.exponentialBackoff = exponentialBackOff;
 dist.factorial = factorial;
 dist.fakeCreditCard = fakeCreditCard;
 dist.fontAwesomeIconToBlob = fontAwesomeIconToBlob;
@@ -13295,7 +12290,9 @@ const useAutocomplete = (all_strings, max_suggestions = 10) => {
     show_on_empty
   }) {
     if (input_val.length > 0 || show_on_empty) {
-      const sorted = matchSorter(all_strings, input_val).slice(0, max_suggestions);
+      const sorted = matchSorter(all_strings, input_val, {
+        keys: ['value', 'text']
+      }).slice(0, max_suggestions);
       const options = optionsFromStrings_1(sorted);
       return options;
     }
@@ -13631,7 +12628,7 @@ const useInterval = (callback, delay) => {
       clearInterval(interval);
       setTriggerTime(null);
     };
-  }, [delay]);
+  }, [delay, callback]);
   return trigger_time;
 };
 
@@ -13741,7 +12738,12 @@ const useMultiSelect = (default_select = []) => {
         return new Set(state).add(action.item);
 
       case 'remove':
-        return new Set(state).delete(action.item);
+        const set = new Set(state);
+        set.delete(action.item);
+        return set;
+
+      case 'reset':
+        return new Set(action.values);
 
       default:
         return state;
@@ -13765,7 +12767,12 @@ const useMultiSelect = (default_select = []) => {
     item
   });
 
-  return [state, toggle, add, remove];
+  const reset = values => dispatch({
+    type: 'reset',
+    values
+  });
+
+  return [state, toggle, add, remove, reset];
 };
 
 const useOnce = func => {
@@ -14035,6 +13042,7 @@ dist$1.useResult = useResult;
 dist$1.useRunAfterUpdate = useRunAfterUpdate;
 dist$1.useScroll = useScroll;
 dist$1.useSet = useSet;
+dist$1.useShiftSelect = useShiftSelect;
 dist$1.useToggle = useToggle;
 dist$1.useWhyDidYouUpdate = useWhyDidYouUpdate;
 dist$1.useWindowFocus = useWindowFocus;
@@ -14173,14 +13181,12 @@ var InputContainer = newStyled.div(_templateObject2 || (_templateObject2 = _tagg
 // For autocomplete, type="text" and autocomplete_strings={['Just strings']}
 
 var FloatingLabel = function FloatingLabel(_ref) {
-  var _refs$reference$curre;
-
   var always_float = _ref.always_float,
       className = _ref.className,
       containerClassNames = _ref.containerClassNames,
-      containerStyle = _ref.containerStyle,
-      listStyle = _ref.listStyle,
-      dark = _ref.dark,
+      containerStyle = _ref.containerStyle;
+      _ref.listStyle;
+      var dark = _ref.dark,
       transparent = _ref.transparent,
       message = _ref.message,
       invalid = _ref.invalid,
@@ -14210,8 +13216,8 @@ var FloatingLabel = function FloatingLabel(_ref) {
 
   var _useState3 = React.useState({}),
       _useState4 = _slicedToArray$1(_useState3, 2),
-      size_data = _useState4[0],
-      setSizeData = _useState4[1];
+      dropdown_position = _useState4[0],
+      setDropdownPosition = _useState4[1];
 
   var _useReducer = React.useReducer(function (state, action) {
     if (action.is_visible) {
@@ -14235,21 +13241,6 @@ var FloatingLabel = function FloatingLabel(_ref) {
   var selected_option = initial_options && initial_options.find(function (o) {
     return String(o.value) === String(value);
   });
-
-  var _useFloating = useFloating({
-    placement: 'bottom-start',
-    portaled: true,
-    middleware: [size({
-      apply: setSizeData
-    }), shift()]
-  }),
-      dropdown_x = _useFloating.x,
-      dropdown_y = _useFloating.y,
-      dropdown_reference = _useFloating.reference,
-      dropdown_floating = _useFloating.floating,
-      dropdown_strategy = _useFloating.strategy,
-      refs = _useFloating.refs,
-      update = _useFloating.update;
 
   var _useKeyboardScroll = useKeyboardScroll_1({
     initial_options: initial_options,
@@ -14312,28 +13303,6 @@ var FloatingLabel = function FloatingLabel(_ref) {
       scrollToActiveItem();
     }
   }, [active_index]);
-  React.useEffect(function () {
-    if (!refs.reference.current || !refs.floating.current) {
-      return function () {
-        return null;
-      };
-    }
-
-    var parents = [].concat(_toConsumableArray$1(getScrollParents(refs.reference.current)), _toConsumableArray$1(getScrollParents(refs.floating.current)));
-    parents.forEach(function (parent) {
-      parent.addEventListener('scroll', update);
-      parent.addEventListener('resize', update);
-    });
-    return function () {
-      parents.forEach(function (parent) {
-        parent.removeEventListener('scroll', update);
-        parent.removeEventListener('resize', update);
-      });
-    };
-  }, [refs.reference, refs.floating, update]);
-  React.useLayoutEffect(function () {
-    update();
-  }, [is_focused]);
 
   if (is_select) {
     input_props.type = 'text'; // eslint-disable-line no-param-reassign
@@ -14361,13 +13330,31 @@ var FloatingLabel = function FloatingLabel(_ref) {
     return false;
   };
 
+  var measuredRef = React.useCallback(function (node) {
+    if (node !== null) {
+      var positions = node.getBoundingClientRect();
+      if (!positions) return {};
+      setDropdownPosition({
+        top: positions.top,
+        left: positions.left,
+        width: positions.width
+      });
+    }
+
+    return true;
+  }, []);
+  console.log({
+    is_select: is_select,
+    is_autocomplete: is_autocomplete
+  });
+  console.log(visible_options);
+  console.log(dropdown_position);
   return /*#__PURE__*/React__default["default"].createElement(InputContainer, {
     className: classNames('fl-input-container', containerClassNames, {
       'fl-input-select-container': is_select || is_autocomplete,
       'fl-input-container-msg-show': has_message
     }),
-    style: containerStyle,
-    ref: dropdown_reference
+    style: containerStyle
   }, is_select && /*#__PURE__*/React__default["default"].createElement(FontAwesomeIcon, {
     icon: faAngleDoubleDown.faAngleDoubleDown,
     style: {
@@ -14449,17 +13436,14 @@ var FloatingLabel = function FloatingLabel(_ref) {
     },
     className: message_classes
   }, message), (is_select || is_autocomplete) && !input_props.disabled && /*#__PURE__*/reactDom.createPortal( /*#__PURE__*/React__default["default"].createElement(DropdownSelect, {
-    style: _objectSpread2$2(_objectSpread2$2({}, listStyle), {}, {
-      position: dropdown_strategy,
-      top: '0',
-      left: '0',
-      transform: "translate(".concat(Math.round(dropdown_x), "px,").concat(Math.round(dropdown_y), "px)"),
-      maxHeight: size_data.height ? size_data.height - 50 : '',
-      width: (_refs$reference$curre = refs.reference.current) === null || _refs$reference$curre === void 0 ? void 0 : _refs$reference$curre.getBoundingClientRect().width,
-      display: is_focused ? 'block' : 'none'
-    }),
     title: "".concat(label, " Dropdown"),
-    ref: dropdown_floating
+    style: _objectSpread2$2(_objectSpread2$2({
+      position: 'absolute',
+      top: '0',
+      left: '0'
+    }, dropdown_position), {}, {
+      display: is_focused ? 'block' : 'none'
+    })
   }, visible_options.map(function (option, index) {
     return /*#__PURE__*/React__default["default"].createElement(Option, {
       key: option.value || "i-".concat(index),
@@ -14483,7 +13467,13 @@ var FloatingLabel = function FloatingLabel(_ref) {
       },
       setIsVisible: setVisible
     });
-  })), document.body));
+  })), document.body), /*#__PURE__*/React__default["default"].createElement("div", {
+    ref: measuredRef,
+    style: {
+      position: 'relative',
+      order: 10
+    }
+  }));
 };
 
 FloatingLabel.propTypes = {

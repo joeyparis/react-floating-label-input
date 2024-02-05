@@ -5,7 +5,7 @@
  */
 
 // Core React
-import React, { useState, useEffect, useLayoutEffect, useReducer } from 'react'
+import React, { useState, useEffect, useCallback, useReducer } from 'react'
 import { createPortal } from 'react-dom'
 import styled from '@emotion/styled'
 import PropTypes from 'prop-types'
@@ -15,7 +15,6 @@ import classNames from 'classnames'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faAngleDoubleDown } from '@fortawesome/free-solid-svg-icons/faAngleDoubleDown'
 import scrollIntoView from 'scroll-into-view'
-import { useFloating, shift, size, getScrollParents } from '@floating-ui/react-dom'
 
 // Utils
 import { useIdentifier, useAutocomplete, useKeyboardScroll } from '@joeyparis/hooks'
@@ -396,7 +395,7 @@ const FloatingLabel = ({
 	const label_autofill_id = useIdentifier()
 
 	const [is_focused, setIsFocused] = useState(false)
-	const [size_data, setSizeData] = useState({})
+	const [dropdown_position, setDropdownPosition] = useState({})
 
 	const [visible, setVisible] = useReducer((state, action) => {
 		if (action.is_visible) {
@@ -412,25 +411,6 @@ const FloatingLabel = ({
 
 	const initial_options = options || all_autocomplete_options
 	const selected_option = initial_options && initial_options.find((o) => String(o.value) === String(value))
-
-	const {
-		x: dropdown_x,
-		y: dropdown_y,
-		reference: dropdown_reference,
-		floating: dropdown_floating,
-		strategy: dropdown_strategy,
-		refs,
-		update,
-	} = useFloating({
-		placement: 'bottom-start',
-		portaled: true,
-		middleware: [
-			size({
-				apply: setSizeData,
-			}),
-			shift(),
-		],
-	})
 
 	const { handleKeyboardScroll, active_index, visible_options, updateOptions } = useKeyboardScroll({
 		initial_options,
@@ -489,30 +469,6 @@ const FloatingLabel = ({
 		}
 	}, [active_index])
 
-	useEffect(() => {
-		if (!refs.reference.current || !refs.floating.current) {
-			return () => null
-		}
-
-		const parents = [...getScrollParents(refs.reference.current), ...getScrollParents(refs.floating.current)]
-
-		parents.forEach((parent) => {
-			parent.addEventListener('scroll', update)
-			parent.addEventListener('resize', update)
-		})
-
-		return () => {
-			parents.forEach((parent) => {
-				parent.removeEventListener('scroll', update)
-				parent.removeEventListener('resize', update)
-			})
-		}
-	}, [refs.reference, refs.floating, update])
-
-	useLayoutEffect(() => {
-		update()
-	}, [is_focused])
-
 	if (is_select) {
 		input_props.type = 'text' // eslint-disable-line no-param-reassign
 	}
@@ -540,6 +496,18 @@ const FloatingLabel = ({
 		return false
 	}
 
+	const measuredRef = useCallback((node) => {
+		if (node !== null) {
+			const positions = node.getBoundingClientRect()
+
+			if (!positions) return {}
+
+			setDropdownPosition({ top: positions.top, left: positions.left, width: positions.width })
+		}
+
+		return true
+	}, [])
+
 	return (
 		<InputContainer
 			className={classNames('fl-input-container', containerClassNames, {
@@ -547,7 +515,6 @@ const FloatingLabel = ({
 				'fl-input-container-msg-show': has_message,
 			})}
 			style={containerStyle}
-			ref={dropdown_reference}
 		>
 			{is_select && (
 				<FontAwesomeIcon
@@ -643,18 +610,14 @@ const FloatingLabel = ({
 				!input_props.disabled &&
 				createPortal(
 					<DropdownSelect
+						title={`${label} Dropdown`}
 						style={{
-							...listStyle,
-							position: dropdown_strategy,
+							position: 'absolute',
 							top: '0',
 							left: '0',
-							transform: `translate(${Math.round(dropdown_x)}px,${Math.round(dropdown_y)}px)`,
-							maxHeight: size_data.height ? size_data.height - 50 : '',
-							width: refs.reference.current?.getBoundingClientRect().width,
+							...dropdown_position,
 							display: is_focused ? 'block' : 'none',
 						}}
-						title={`${label} Dropdown`}
-						ref={dropdown_floating}
 					>
 						{visible_options.map((option, index) => (
 							<Option
@@ -682,6 +645,7 @@ const FloatingLabel = ({
 					</DropdownSelect>,
 					document.body,
 				)}
+			<div ref={measuredRef} style={{ position: 'relative', order: 10 }} />
 		</InputContainer>
 	)
 }
