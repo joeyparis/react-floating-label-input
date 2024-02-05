@@ -4,7 +4,7 @@ exports[`<FloatingLabel /> matches snapshots 1`] = `
 <body>
   <div>
     <div
-      class="fl-input-container css-fswfu7"
+      class="fl-input-container css-5bqlcx"
     >
       <input
         autocomplete="on"
@@ -20,7 +20,6 @@ exports[`<FloatingLabel /> matches snapshots 1`] = `
       <span
         class="fl-input-bar"
       />
-      
     </div>
   </div>
 </body>

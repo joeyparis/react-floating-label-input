@@ -14,7 +14,7 @@ module.exports = {
 			'<rootDir>/internals/mocks/image.js',
 	},
 	setupFiles: ['<rootDir>/tests/env_init.js'],
-	setupFilesAfterEnv: ['<rootDir>/tests/test-bundler.js', '@testing-library/jest-dom/extend-expect'],
+	setupFilesAfterEnv: ['<rootDir>/tests/test-bundler.js'],
 	testRegex: 'tests/.*\\.test\\.js$',
 	snapshotSerializers: [],
 	watchPlugins: ['jest-watch-typeahead/filename', 'jest-watch-typeahead/testname'],

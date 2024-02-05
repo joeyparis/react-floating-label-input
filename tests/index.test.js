@@ -18,7 +18,11 @@ describe('<FloatingLabel />', () => {
 		return <FloatingLabel value={value} onChange={(e) => setValue(e.target.value)} {...props} />
 	}
 
+	let user
+
 	beforeAll(() => {
+		user = userEvent.setup({ delay: null })
+
 		if (typeof global.IntersectionObserver === 'undefined') {
 			global.IntersectionObserver = class IntersectionObserver {
 				observe() {
@@ -41,11 +45,11 @@ describe('<FloatingLabel />', () => {
 		expect(baseElement).toMatchSnapshot()
 	})
 
-	it('handles input change', () => {
+	it('handles input change', async () => {
 		const { queryByLabelText } = render(<FloatingLabelWrapper label="First Name" />)
 
 		const first_name_input = queryByLabelText('First Name')
-		userEvent.type(first_name_input, 'Joey')
+		await user.type(first_name_input, 'Joey')
 
 		expect(first_name_input.value).toBe('Joey')
 	})
@@ -56,7 +60,7 @@ describe('<FloatingLabel />', () => {
 		expect(message).toBeDefined()
 	})
 
-	it('handles a message being clicked', () => {
+	it('handles a message being clicked', async () => {
 		const { queryByText, queryByLabelText } = render(
 			<FloatingLabelWrapper label="First Name" message="default_name" />,
 		)
@@ -64,11 +68,11 @@ describe('<FloatingLabel />', () => {
 		const first_name_input = queryByLabelText('First Name')
 
 		expect(first_name_input.value).toBe('')
-		userEvent.click(message)
+		await user.click(message)
 		expect(first_name_input.value).toBe('default_name')
 	})
 
-	it('handles a message being pressed with enter', () => {
+	it('handles a message being pressed with enter', async () => {
 		const { queryByText, queryByLabelText } = render(
 			<FloatingLabelWrapper label="First Name" message="default_name" />,
 		)
@@ -78,7 +82,7 @@ describe('<FloatingLabel />', () => {
 		expect(first_name_input.value).toBe('')
 		message.focus()
 		expect(message).toHaveFocus()
-		userEvent.keyboard('{Enter}')
+		await user.keyboard('{Enter}')
 		expect(first_name_input.value).toBe('default_name')
 	})
 
@@ -98,11 +102,11 @@ describe('<FloatingLabel />', () => {
 			/>,
 		)
 		const department_dropdown = await findByTitle('floating-label-select')
-		userEvent.click(department_dropdown)
+		await user.click(department_dropdown)
 
 		const first_option = await findByText('one')
 		expect(department_dropdown.value).toBe('')
-		userEvent.click(first_option)
+		await user.click(first_option)
 
 		// await waitForElementToBeRemoved(() => queryByT('floating-label-select'))
 
@@ -131,10 +135,10 @@ describe('<FloatingLabel />', () => {
 			/>,
 		)
 		const department_dropdown = await findByTitle('floating-label-select')
-		userEvent.click(department_dropdown)
+		await user.click(department_dropdown)
 
-		userEvent.keyboard('{ArrowDown}') // Start at the first entry (one), so pressing it only once moves us to (two)
-		userEvent.keyboard('{Enter}')
+		await user.keyboard('{ArrowDown}') // Start at the first entry (one), so pressing it only once moves us to (two)
+		await user.keyboard('{Enter}')
 
 		expect(department_dropdown.value).toBe('two')
 
@@ -153,19 +157,19 @@ describe('<FloatingLabel />', () => {
 		)
 		const department_dropdown = await findByTitle('floating-label-select')
 
-		userEvent.type(department_dropdown, 'd')
+		await user.type(department_dropdown, 'd')
 		expect(queryByText('abcd')).toBeDefined()
 		expect(queryByText('defg')).toBeDefined()
 		expect(queryByText('ghij')).toBeNull()
 		expect(queryByText('123')).toBeNull()
 
-		userEvent.type(department_dropdown, '{backspace}g')
+		await user.type(department_dropdown, '{backspace}g')
 		expect(queryByText('abcd')).toBeNull()
 		expect(queryByText('defg')).toBeDefined()
 		expect(queryByText('ghij')).toBeDefined()
 		expect(queryByText('123')).toBeNull()
 
-		userEvent.type(department_dropdown, '{backspace}2')
+		await user.type(department_dropdown, '{backspace}2')
 		expect(queryByText('abcd')).toBeNull()
 		expect(queryByText('defg')).toBeNull()
 		expect(queryByText('ghij')).toBeNull()
@@ -175,14 +179,14 @@ describe('<FloatingLabel />', () => {
 		expect(dropwdown_select).toHaveStyle({ display: 'block' }) // We want it to be block because nothing has been selected
 	})
 
-	it('handles custom onFocus callback', () => {
+	it('handles custom onFocus callback', async () => {
 		const onFocus = jest.fn()
 
 		const { queryByTitle } = render(
 			<FloatingLabelWrapper label="Department" title="floating-label-input" onFocus={onFocus} />,
 		)
 		const department_dropdown = queryByTitle('floating-label-input')
-		userEvent.click(department_dropdown)
+		await user.click(department_dropdown)
 
 		expect(onFocus).toHaveBeenCalledWith(
 			expect.objectContaining({
@@ -198,8 +202,8 @@ describe('<FloatingLabel />', () => {
 			<FloatingLabelWrapper label="Department" title="floating-label-input" onBlur={onBlur} />,
 		)
 		const department_dropdown = queryByTitle('floating-label-input')
-		userEvent.click(department_dropdown)
-		userEvent.click(department_dropdown.parentElement)
+		await user.click(department_dropdown)
+		await user.click(department_dropdown.parentElement)
 
 		expect(onBlur).toHaveBeenCalledWith(
 			expect.objectContaining({
@@ -208,7 +212,7 @@ describe('<FloatingLabel />', () => {
 		)
 	})
 
-	it.skip('handles a fake preventDefault', () => {
+	it.skip('handles a fake preventDefault', async () => {
 		// todo: This doesn't actually cover the preventDefault function
 		const onChange = jest.fn()
 
@@ -225,8 +229,8 @@ describe('<FloatingLabel />', () => {
 			/>,
 		)
 		const department_dropdown = queryByTitle('floating-label-select')
-		userEvent.click(department_dropdown)
-		userEvent.keyboard('{Enter}')
+		await user.click(department_dropdown)
+		await user.keyboard('{Enter}')
 
 		expect(onChange).toHaveBeenCalledWith(
 			{ preventDefault: expect.any(Function), target: { name: undefined, value: 1 } },
