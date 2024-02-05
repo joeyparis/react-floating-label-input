@@ -2318,17 +2318,17 @@ __metadata:
   linkType: hard
 
 "@joeyparis/hooks@file:../hooks::locator=%40joeyparis%2Freact-floating-label-input%40workspace%3A.":
-  version: 0.0.7
-  resolution: "@joeyparis/hooks@file:../hooks#../hooks::hash=2c42b8&locator=%40joeyparis%2Freact-floating-label-input%40workspace%3A."
+  version: 0.0.8
+  resolution: "@joeyparis/hooks@file:../hooks#../hooks::hash=c9a7b2&locator=%40joeyparis%2Freact-floating-label-input%40workspace%3A."
   dependencies:
-    "@joeyparis/utils": ^0.0.3
+    "@joeyparis/utils": ^0.0.7
     date-fns: ^2.22.1
     match-sorter: ^6.3.1
   peerDependencies:
     react: "*"
     react-dom: "*"
     react-router-dom: "*"
-  checksum: 06822cdaf2ee77d2ba7ac8905b19c60070846167ea8b373d82077ab4022c59f0c6a1e10807389ef9488445f7d634ed1985ea5581dc957b81461358602ca8bf07
+  checksum: 5fe6b273ac7b98228f08b5360a0a39b18061c736432573a6de22f9342bf13153cdfa208b3f722c80ea1e56bc2b23f18b474026fd9fc8774e55d4ccb1787ce4a9
   languageName: node
   linkType: hard
 
@@ -2354,7 +2354,7 @@ __metadata:
     "@fortawesome/fontawesome-svg-core": ^1.2.36
     "@fortawesome/free-solid-svg-icons": ^5.15.4
     "@fortawesome/react-fontawesome": ^0.1.17
-    "@joeyparis/hooks": ^0.0.7
+    "@joeyparis/hooks": ^0.0.12
     "@mdx-js/react": ^2.0.0
     "@rollup/plugin-babel": ^5.3.0
     "@rollup/plugin-commonjs": ^21.0.1
@@ -2401,14 +2401,13 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@joeyparis/utils@npm:^0.0.3":
-  version: 0.0.3
-  resolution: "@joeyparis/utils@npm:0.0.3"
+"@joeyparis/utils@npm:^0.0.7":
+  version: 0.0.7
+  resolution: "@joeyparis/utils@npm:0.0.7"
   dependencies:
     file-saver: ^2.0.5
-    moment: ^2.29.1
     phone-formatter: ^0.0.2
-  checksum: d3f85bb6231f07cf43f05974d012a00a367f04a1382bdca076b2d5de737acf207d16deddf6000845da35466afe47c8ca7e5d913f04d05d6601cb2c5045fd1288
+  checksum: 84ae2aff7b0c61161b350b7a16610b3a2d3140d9244c0af8d46bfcafe0d15a01739e84a01c9354cf4e94a60c3f5531202b7583e4f8bef0ea39726b325690934c
   languageName: node
   linkType: hard
 
@@ -11945,13 +11944,6 @@ __metadata:
   bin:
     mkdirp: bin/cmd.js
   checksum: a96865108c6c3b1b8e1d5e9f11843de1e077e57737602de1b82030815f311be11f96f09cce59bd5b903d0b29834733e5313f9301e3ed6d6f6fba2eae0df4298f
-  languageName: node
-  linkType: hard
-
-"moment@npm:^2.29.1":
-  version: 2.29.1
-  resolution: "moment@npm:2.29.1"
-  checksum: 1e14d5f422a2687996be11dd2d50c8de3bd577c4a4ca79ba5d02c397242a933e5b941655de6c8cb90ac18f01cc4127e55b4a12ae3c527a6c0a274e455979345e
   languageName: node
   linkType: hard
 
