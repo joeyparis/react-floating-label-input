@@ -2290,16 +2290,16 @@ __metadata:
 
 "@joeyparis/hooks@file:../hooks::locator=%40joeyparis%2Freact-floating-label-input%40workspace%3A.":
   version: 0.0.8
-  resolution: "@joeyparis/hooks@file:../hooks#../hooks::hash=3713af&locator=%40joeyparis%2Freact-floating-label-input%40workspace%3A."
+  resolution: "@joeyparis/hooks@file:../hooks#../hooks::hash=c9a7b2&locator=%40joeyparis%2Freact-floating-label-input%40workspace%3A."
   dependencies:
-    "@joeyparis/utils": ^0.0.5
+    "@joeyparis/utils": ^0.0.7
     date-fns: ^2.22.1
     match-sorter: ^6.3.1
   peerDependencies:
     react: "*"
     react-dom: "*"
     react-router-dom: "*"
-  checksum: f35b01d1a827295b3ce8007c46be353c564039f65e9e1a8d9fa7d3d8989abfb030bcc55b42183d8a5fc7fd823af44056434ea00c52907075ecd3fffb23bcc835
+  checksum: 5fe6b273ac7b98228f08b5360a0a39b18061c736432573a6de22f9342bf13153cdfa208b3f722c80ea1e56bc2b23f18b474026fd9fc8774e55d4ccb1787ce4a9
   languageName: node
   linkType: hard
 
@@ -2324,7 +2324,7 @@ __metadata:
     "@fortawesome/fontawesome-svg-core": ^1.2.36
     "@fortawesome/free-solid-svg-icons": ^5.15.4
     "@fortawesome/react-fontawesome": ^0.1.17
-    "@joeyparis/hooks": ^0.0.7
+    "@joeyparis/hooks": ^0.0.12
     "@mdx-js/react": ^2.0.0
     "@rollup/plugin-babel": ^5.3.0
     "@rollup/plugin-commonjs": ^21.0.1
@@ -2371,13 +2371,13 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@joeyparis/utils@npm:^0.0.5":
-  version: 0.0.5
-  resolution: "@joeyparis/utils@npm:0.0.5"
+"@joeyparis/utils@npm:^0.0.7":
+  version: 0.0.7
+  resolution: "@joeyparis/utils@npm:0.0.7"
   dependencies:
     file-saver: ^2.0.5
     phone-formatter: ^0.0.2
-  checksum: f23c5a4693fec933476bca6eac5c5fa5e909922b06824ac4963828c617ace3a61f5c61f6d227470831a8bcd65e9f08bec0065af55ab5984dda838b4f2a8ffbd3
+  checksum: 84ae2aff7b0c61161b350b7a16610b3a2d3140d9244c0af8d46bfcafe0d15a01739e84a01c9354cf4e94a60c3f5531202b7583e4f8bef0ea39726b325690934c
   languageName: node
   linkType: hard
 
